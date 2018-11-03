@@ -1,5 +1,13 @@
 package mapreduce
 
+import (
+	"encoding/json"
+	"io"
+	"log"
+	"os"
+	"sort"
+)
+
 func doReduce(
 	jobName string, // the name of the whole MapReduce job
 	reduceTask int, // which reduce task this is
@@ -44,4 +52,65 @@ func doReduce(
 	//
 	// Your code here (Part I).
 	//
+
+	inputfiles := make([]*os.File, nMap)
+	decoders := make([]*json.Decoder, nMap)
+	rmap := make(map[string][]string)
+	outfile, err := os.OpenFile(outFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0755)
+	defer outfile.Close()
+	if err != nil {
+		log.Fatalln("open", outfile, err)
+		return
+	}
+
+	for m := 0; m < nMap; m++ {
+		filename := reduceName(jobName, m, reduceTask)
+		inputfiles[m], err = os.Open(filename)
+		if err != nil {
+			log.Fatalln("read", filename, err)
+			return
+		}
+		defer inputfiles[m].Close()
+		decoders[m] = json.NewDecoder(inputfiles[m])
+
+		for {
+			var keyval KeyValue
+			if err := decoders[m].Decode(&keyval); err == io.EOF {
+				break
+			} else if err != nil {
+				log.Fatalln("decode", filename, err)
+				return
+			}
+
+			//debug("Reduce: %v, %v\n", keyval.Key, keyval.Value)
+
+			_, ok := rmap[keyval.Key]
+			if !ok {
+				strlist := make([]string, 0)
+				strlist = append(strlist, keyval.Value)
+				rmap[keyval.Key] = strlist
+			} else {
+				rmap[keyval.Key] = append(rmap[keyval.Key], keyval.Value)
+			}
+		}
+
+		var keys []string
+		for k := range rmap {
+			keys = append(keys, k)
+		}
+
+		sort.Strings(keys)
+
+		enc := json.NewEncoder(outfile)
+
+		for _, key := range keys {
+			values := rmap[key]
+			//debug("Reduce input key:%v, value: %v, len %v\n", key, values, len(values))
+
+			output := reduceF(key, values)
+			enc.Encode(KeyValue{key, output})
+		}
+
+	}
+
 }

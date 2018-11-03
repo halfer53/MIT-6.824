@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"mapreduce"
 	"os"
+	"strconv"
+	"strings"
+	//"unicode"
 )
 
 //
@@ -15,6 +19,31 @@ import (
 //
 func mapF(filename string, contents string) []mapreduce.KeyValue {
 	// Your code here (Part II).
+	//splits = strings.FieldsFunc(contents, func (input rune) bool{
+	//	return !unicode.IsLetter(input)
+	//})
+
+	splits := strings.Fields(contents)
+	wmap := make(map[string]int)
+
+	count := 0
+	for _, val := range splits {
+		_, ok := wmap[val]
+		if !ok {
+			wmap[val] = 1
+		} else {
+			wmap[val] += 1
+		}
+	}
+
+	ret := make([]mapreduce.KeyValue, len(wmap))
+	for key, val := range wmap {
+		ret[count].Key = key
+		ret[count].Value = strconv.Itoa(val)
+
+		count += 1
+	}
+	return ret
 }
 
 //
@@ -24,6 +53,18 @@ func mapF(filename string, contents string) []mapreduce.KeyValue {
 //
 func reduceF(key string, values []string) string {
 	// Your code here (Part II).
+
+	sum := 0
+	for i := 0; i < len(values); i++ {
+		val, err := strconv.Atoi(values[i])
+		if err != nil {
+			log.Printf("cannot convert %v", val)
+			break
+		}
+		sum += val
+	}
+	return strconv.Itoa(sum)
+
 }
 
 // Can be run in 3 ways:
@@ -31,6 +72,8 @@ func reduceF(key string, values []string) string {
 // 2) Master (e.g., go run wc.go master localhost:7777 x1.txt .. xN.txt)
 // 3) Worker (e.g., go run wc.go worker localhost:7777 localhost:7778 &)
 func main() {
+	fmt.Println("args", os.Args, os.Args[3:])
+
 	if len(os.Args) < 4 {
 		fmt.Printf("%s: see usage comments in file\n", os.Args[0])
 	} else if os.Args[1] == "master" {

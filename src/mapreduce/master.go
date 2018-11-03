@@ -6,6 +6,7 @@ package mapreduce
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"sync"
 )
@@ -62,6 +63,11 @@ func Sequential(jobName string, files []string, nreduce int,
 	reduceF func(string, []string) string,
 ) (mr *Master) {
 	mr = newMaster("master")
+	mr.files = files
+	mr.nReduce = nreduce
+
+	fmt.Println("mr files", mr.files)
+
 	go mr.run(jobName, files, nreduce, func(phase jobPhase) {
 		switch phase {
 		case mapPhase:
@@ -133,6 +139,7 @@ func (mr *Master) run(jobName string, files []string, nreduce int,
 	schedule func(phase jobPhase),
 	finish func(),
 ) {
+	log.SetFlags(log.Lshortfile)
 	mr.jobName = jobName
 	mr.files = files
 	mr.nReduce = nreduce
