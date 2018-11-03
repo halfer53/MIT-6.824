@@ -58,6 +58,8 @@ func doMap(
 	// Your code here (Part I).
 	//
 
+	debug("%v Map Phase\n", inFile)
+
 	bytes, err := ioutil.ReadFile(inFile)
 	if err != nil {
 		log.Fatalln("read", inFile, err)
@@ -83,7 +85,7 @@ func doMap(
 
 	for _, val := range keyValuePairs {
 		hash := ihash(val.Key) % nReduce
-		//debug("Map: %v, %v\n", val.Key, val.Value)
+		debugVerbose("Map: %v, %v\n", val.Key, val.Value)
 		err := outputencoders[hash].Encode(&val)
 		if err != nil {
 			log.Fatalln("encode", err)

@@ -7,10 +7,18 @@ import (
 
 // Debugging enabled?
 const debugEnabled = true
+const isDebugVerbose = false
 
 // debug() will only print if debugEnabled is true
 func debug(format string, a ...interface{}) (n int, err error) {
 	if debugEnabled {
+		n, err = fmt.Printf(format, a...)
+	}
+	return
+}
+
+func debugVerbose(format string, a ...interface{}) (n int, err error) {
+	if isDebugVerbose && debugEnabled {
 		n, err = fmt.Printf(format, a...)
 	}
 	return

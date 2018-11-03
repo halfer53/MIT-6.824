@@ -53,6 +53,7 @@ func doReduce(
 	// Your code here (Part I).
 	//
 
+	debug("%v Reduce phase\n", outFile)
 	inputfiles := make([]*os.File, nMap)
 	decoders := make([]*json.Decoder, nMap)
 	rmap := make(map[string][]string)
@@ -82,7 +83,7 @@ func doReduce(
 				return
 			}
 
-			//debug("Reduce: %v, %v\n", keyval.Key, keyval.Value)
+			debugVerbose("Reduce: %v, %v\n", keyval.Key, keyval.Value)
 
 			_, ok := rmap[keyval.Key]
 			if !ok {

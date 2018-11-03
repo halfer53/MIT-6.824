@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	//"unicode"
+	"unicode"
 )
 
 //
@@ -19,11 +19,11 @@ import (
 //
 func mapF(filename string, contents string) []mapreduce.KeyValue {
 	// Your code here (Part II).
-	//splits = strings.FieldsFunc(contents, func (input rune) bool{
-	//	return !unicode.IsLetter(input)
-	//})
+	splits := strings.FieldsFunc(contents, func(input rune) bool {
+		return !unicode.IsLetter(input)
+	})
 
-	splits := strings.Fields(contents)
+	//splits := strings.Fields(contents)
 	wmap := make(map[string]int)
 
 	count := 0
